@@ -12,15 +12,15 @@
 
 <div th:replace="/fragments/error-frag :: user-error"></div>
 
-<h1 th:text="${'User info for user id: ' + viewUser.id + ' with the username ' + viewUser.username}"></h1>
+<h1 th:text="${'User info for user id: ' + viewUserId + ' with the username ' + viewUserName}"></h1>
 
-<form th:action="${'/user/' + viewUser.id}" th:method="PUT">
+<form th:action="${'/user/' + viewUserId}" th:method="PUT">
     <label for="username"> Username</label>
-    <input th:value="${viewUser.username}" type="text" name="username"
-           th:disabled="${!authUser.username.equals(viewUser.userName)}"/>
+    <input th:value="${viewUserName}" type="text" name="username"
+           th:disabled="${!authUserName.equals(viewUserName)}"/>
     <label for="firstName">First Name</label>
-    <input th:value="${viewUser.firstName}" type="text" name="firstName"
-           th:disabled="${!authUser.username.equals(viewUser.userName)}"/>
+    <input th:value="${viewUserFirstName}" type="text" name="firstName"
+           th:disabled="${!authUserName.equals(viewUserName)}"/>
     <input type="submit" value="Edit User Info"/>
 </form>
 
