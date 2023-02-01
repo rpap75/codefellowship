@@ -69,9 +69,15 @@ public class SiteUserController {
     @GetMapping("/user/{id}")
     public String getOneSiteUser(@PathVariable Long id, Model m, Principal p) {
         SiteUser authenticateUser = siteUserRepository.findByUsername(p.getName());
-        m.addAttribute("authUser", authenticateUser);
+        String authUserName = authenticateUser.getUsername();
+        m.addAttribute("authUserName", authUserName);
         SiteUser viewUser = siteUserRepository.findById(id).orElseThrow();
-        m.addAttribute("siteUser", viewUser);
+        Long viewUserId = viewUser.getId();
+        String viewUserName = viewUser.getUsername();
+        String viewUserFirstName = viewUser.getFirstName();
+        m.addAttribute("viewUserFirstName", viewUserFirstName);
+        m.addAttribute("viewUserName", viewUserName);
+        m.addAttribute("viewUserId", viewUserId);
         return "user-info.html";
     }
 
@@ -87,7 +93,7 @@ public class SiteUserController {
     @PutMapping("/user/{id}")
     public RedirectView editSiteUserInfo(@PathVariable Long id, String username, String firstName, Principal p, RedirectAttributes redir) throws ServletException {
         SiteUser userToBeEdited = siteUserRepository.findById(id).orElseThrow();
-        if (p.getName().equals(userToBeEdited.getUsername())) {
+        if (p.getName().equals(userToBeEdited.getUsername())) {git
             userToBeEdited.setUsername(username);
             userToBeEdited.setFirstName(firstName);
             siteUserRepository.save(userToBeEdited);
