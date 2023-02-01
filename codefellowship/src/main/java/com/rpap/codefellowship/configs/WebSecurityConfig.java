@@ -7,15 +7,14 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-//import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfig;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 // TODO Step 5: Create the WebSecruityConfig
 @Configuration
 @EnableWebSecurity
-public class WebSecurityConfig extends WebSecurityConfig {
+public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     //TODO: wire up the SiteUserDetailsServiceImpl
     @Autowired
     SiteUserDetailsServiceImpl siteUserDetailsService;
@@ -42,12 +41,13 @@ public class WebSecurityConfig extends WebSecurityConfig {
                 .csrf().disable()
                 // REQUEST SECTION
                 .authorizeRequests()
-                .antMatchers("/", "/login", "/signup").permitAll()
+                .antMatchers("/", "/login", "/register").permitAll()
                 .anyRequest().authenticated()
                 .and() // Seperator
                 // Login Section
                 .formLogin()
                 .loginPage("/login")
+//                .defaultSuccessUrl()
                 .and()
                 // Logout section
                 .logout()

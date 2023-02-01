@@ -15,6 +15,6 @@ public class SiteUserDetailsServiceImpl implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         System.out.println("SITE USER DETAILS SERVICE CALLS FOR USER FROM DATABASE");
-        return siteUserRepository.findByUsername(username);
+        return (UserDetails) siteUserRepository.findByUsername(username);
     }
 }
