@@ -2,64 +2,108 @@ package com.rpap.codefellowship.controllers;
 
 import com.rpap.codefellowship.models.SiteUser;
 import com.rpap.codefellowship.repositories.SiteUserRepository;
-import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.servlet.HttpServletBean;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.servlet.view.RedirectView;
 
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import java.rmi.server.ServerCloneException;
 import java.security.Principal;
 import java.util.Date;
 
 @Controller
 public class SiteUserController {
 
-@Autowired
+    @Autowired
     SiteUserRepository siteUserRepository;
 
-@Autowired
+    @Autowired
     PasswordEncoder passwordEncoder;
 
-@Autowired
+    @Autowired
     HttpServletRequest request;
 
-    @PostMapping("/register")
-    public RedirectView createSiteUser(String username, String password, String firstName, String lastName, Date dateOfBirth, String bio){
-        String hashedPW = passwordEncoder.encode(password);
-        SiteUser newUser = new SiteUser(username, hashedPW, firstName, lastName, new Date(), bio);
-        siteUserRepository.save(newUser);
-        return new RedirectView("/login");
-    }
-
     @GetMapping("/login")
-    public String getLoginPage(){
+    public String getLoginPage() {
         return "login.html";
     }
 
     @GetMapping("/register")
-    public String getRegisterPage(){
+    public String getRegisterPage() {
         return "register.html";
     }
 
+    @GetMapping("/application")
+    public String getApplication() {
+        return "ApplicationUser.html";
+    }
+
     @GetMapping("/")
-    public String getHome(Model m, Principal p){
-if (p != null) {
-    String username = p.getName();
-    SiteUser dbUser = siteUserRepository.findByUsername(username);
+    public String getHome(Model m, Principal p) {
+        if (p != null) {
+            String username = p.getName();
+            SiteUser dbUser = siteUserRepository.findByUsername(username);
 
-    m.addAttribute("username", username);
-    m.addAttribute("FirstName", dbUser.getFirstName());
-}
+            m.addAttribute("username", username);
+            m.addAttribute("FirstName", dbUser.getFirstName());
+        }
+        try {
 
+        } catch (RuntimeException runtimeException) {
+            throw new RuntimeException("OOOOOOOOPPPPPSSSS!");
+        }
         return "index.html";
     }
 
-    @GetMapping("/application")
-    public String getApplication () {
-        return "ApplicationUser.html";
+    @GetMapping("/user/{id}")
+    public String getOneSiteUser(@PathVariable Long id, Model m, Principal p) {
+        SiteUser authenticateUser = siteUserRepository.findByUsername(p.getName());
+        m.addAttribute("authUser", authenticateUser);
+        SiteUser viewUser = siteUserRepository.findById(id).orElseThrow();
+        m.addAttribute("siteUser", viewUser);
+        return "user-info.html";
+    }
+
+    @PostMapping("/register")
+    public RedirectView createSiteUser(String username, String password, String firstName, String lastName, String bio) {
+        String hashedPW = passwordEncoder.encode(password);
+        SiteUser newUser = new SiteUser(username, hashedPW, firstName, lastName, new Date(), bio);
+        siteUserRepository.save(newUser);
+        autoAuthWithHttpServletRequest(username, password);
+        return new RedirectView("/");
+    }
+
+    @PutMapping("/user/{id}")
+    public RedirectView editSiteUserInfo(@PathVariable Long id, String username, String firstName, Principal p, RedirectAttributes redir) throws ServletException {
+        SiteUser userToBeEdited = siteUserRepository.findById(id).orElseThrow();
+        if (p.getName().equals(userToBeEdited.getUsername())) {
+            userToBeEdited.setUsername(username);
+            userToBeEdited.setFirstName(firstName);
+            siteUserRepository.save(userToBeEdited);
+            request.logout();
+            autoAuthWithHttpServletRequest(username, userToBeEdited.getPassword());
+        } else {
+            redir.addFlashAttribute("errorMessage", "Cannot edit another users info");
+        }
+        return new RedirectView("/user/" + id);
+    }
+
+    public void autoAuthWithHttpServletRequest(String username, String password) {
+        try {
+            request.login(username, password);
+        } catch (ServletException se) {
+            se.printStackTrace();
+        }
     }
 }
