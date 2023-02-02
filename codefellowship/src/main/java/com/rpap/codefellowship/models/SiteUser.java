@@ -4,12 +4,11 @@ package com.rpap.codefellowship.models;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 public class SiteUser implements UserDetails {
@@ -27,6 +26,25 @@ public class SiteUser implements UserDetails {
 
     protected SiteUser() {
     }
+
+    @ManyToMany
+    @JoinTable(
+            name = "followers_to_followees",
+            joinColumns = {@JoinColumn(name = "userWhoIsFallowing")},
+            inverseJoinColumns = {@JoinColumn(name = "FollowedUser")}
+    )
+    Set<SiteUser> usersIFollow = new HashSet<>();
+
+    public Set<SiteUser> getUsersIFollow() {
+        return usersIFollow;
+    }
+
+    public Set<SiteUser> getUsersWhoFollowMe() {
+        return usersWhoFollowMe;
+    }
+
+    @ManyToMany(mappedBy = "usersIFollow")
+    Set<SiteUser> usersWhoFollowMe = new HashSet<>();
 
     public SiteUser(String username, String password, String firstName, String lastName, Date dateOfBirth, String bio) {
         this.username = username;
