@@ -1,6 +1,8 @@
 package com.rpap.codefellowship.controllers;
 
+import com.rpap.codefellowship.models.Post;
 import com.rpap.codefellowship.models.SiteUser;
+import com.rpap.codefellowship.repositories.PostRepository;
 import com.rpap.codefellowship.repositories.SiteUserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -21,6 +23,9 @@ import java.util.Date;
 
 @Controller
 public class SiteUserController {
+
+    @Autowired
+    PostRepository postRepository;
 
     @Autowired
     SiteUserRepository siteUserRepository;
@@ -61,6 +66,13 @@ public class SiteUserController {
             throw new RuntimeException("OOOOOOOOPPPPPSSSS!");
         }
         return "index.html";
+    }
+
+    @GetMapping("/myProfile")
+    public String getMyProfile(Model m, Principal p) {
+       SiteUser authenticatedUser = siteUserRepository.findByUsername(p.getName());
+       m.addAttribute("authUser", authenticatedUser);
+       return "myProfile.html";
     }
 
     @GetMapping("/user/{id}")
@@ -122,6 +134,21 @@ public class SiteUserController {
         siteUserRepository.save(browsingUser);
 
         return new RedirectView("/user/" + id);
+    }
+
+    @PostMapping("/myProfile")
+    public RedirectView createPost(Principal p, String body, Model m) {
+        if(p!=null){
+            String username = p.getName();
+            SiteUser siteUser = siteUserRepository.findByUsername(username);
+            m.addAttribute("addPost", siteUser.getListOfPost());
+            Date date = new Date();
+            Post newPost = new Post(body, date, siteUser);
+            newPost.setCreatedBy(siteUser);
+            postRepository.save(newPost);
+//            postRepository.findAll();
+        }
+        return new RedirectView("/myProfile");
     }
 
     public void autoAuthWithHttpServletRequest(String username, String password) {

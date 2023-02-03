@@ -46,6 +46,17 @@ public class SiteUser implements UserDetails {
     @ManyToMany(mappedBy = "usersIFollow")
     Set<SiteUser> usersWhoFollowMe = new HashSet<>();
 
+    @OneToMany(mappedBy = "createdBy")
+    Set<Post> listOfPost = new HashSet<>();
+
+    public Set<Post> getListOfPost() {
+        return listOfPost;
+    }
+
+    public void setListOfPost(Set<Post> listOfPost) {
+        this.listOfPost = listOfPost;
+    }
+
     public SiteUser(String username, String password, String firstName, String lastName, Date dateOfBirth, String bio) {
         this.username = username;
         this.password = password;
